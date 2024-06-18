@@ -6,7 +6,7 @@ class Conn {
     private static $Host = 'localhost';
     private static $Dbsa = 'pristore';
     private static $User = 'postgres';
-    private static $Pass = '290497';
+    private static $Pass = '';
     private static $Port = '5432';
 
     /** @var PDO */
