@@ -6,7 +6,7 @@
         </div>
         <div class="col-md-2">
             <label for="cod_produto">Tipo de movimento</label>
-            <select id="tp_movimentacao" class="form-control" >
+            <select id="tp_movimentacao" class="form-control" onchange="tpMovimento()">
             <option value="1">Entrada</option>                
             <option value="2">Saída</option>                
             </select>
@@ -17,26 +17,26 @@
         </div>
     </div>
     <hr>
-    <legend >Dados do documento:</legend>
-    <div class="row">
+    <legend id="textDocMovimento">Dados do documento:</legend>
+    <div class="row" id="tpEntrada">
             <div class="col-md-8 ">
                 <div class="row">
-                    <div class="col-md-2 ">
+                    <div class="col-md-3 ">
                         <label for="dtDoc_mov">Data do doc.</label>
                         <input type="text" id="dtDoc_mov" class="form-control" autocomplete="off" placeholder="__/__/____">
                     </div>
-                    <div class="col-md-2 ">
+                    <div class="col-md-3 ">
                         <label for="dtRec_mov">Data do receb.</label>
                         <input type="text" id="dtRec_mov" class="form-control capslock" autocomplete="off" placeholder="__/__/____">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label for="tpDoc_mov">Tipo do doc.</label>
                         <select id="tpDoc_mov" class="form-control ">
                             <option value="">NF</option>
                             <option value="">RECIBO</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label for="numDoc_mov">Nº Documento</label>
                         <input type="text" id="numDoc_mov" class="form-control " autocomplete="off" maxlength="8">
                     </div>
@@ -63,6 +63,15 @@
                 </div>
             </div>
     </div>
+
+    <div class="row d-none" id="tpSaida">
+        <div class="col-md-3">
+        <label for="cliente_mov">Cliente</label>
+        <input type="hidden" id="codCliente_mov" disabled>
+        <input type="text" class="form-control" id="cliente_mov" autocomplete="off">
+        </div>
+    </div>
+    
     <hr>
     <legend >Dados do item:</legend>
     <div class="row">
@@ -89,13 +98,13 @@
         </div>
         <div class="col-md-2 ">
             <br>
-            <button class="btn btn-sm btn-primary" id="addProdutoMovimento" ><i class="nc-icon nc-simple-add" ></i> Adicionar</button>
+            <button class="btn btn-sm btn-primary" id="addProdutoMovimento" onclick="addProduto()"><i class="nc-icon nc-simple-add" ></i> Adicionar</button>
         </div>
     </div>
     <hr>
     <div class="row">
         <div class="col-md-12">
-            <legend>Itens adicionados:</legend>
+            <legend>Produtos adicionados:</legend>
             <div class="card ">
                 <div class="card-body">
                     <div id="itens_adicionados" class="table-responsive"  style="height: 140px;">
@@ -131,7 +140,6 @@
 <script>
 $(document).ready(function(){
     get_fornecedor('fornecProd_mov');
-
     $(".maskvlr").maskMoney({
         allowNegative: true,
         thousands: '.',
@@ -140,51 +148,25 @@ $(document).ready(function(){
     });
 });
 
-$(document).ready(function() {
-    $('#addProdutoMovimento').click(function() {
-        // Obtenha os valores dos campos
-        var idProdMov = $('#codProdMov').val();
-        var codProdMov = $('#cod_prod_mov').val();
-        var descProdMov = $('#desc_prod_mov').val();
-        var qtdProdMov = $('#qtd_prod_mov').val();
-        var vlrUnProdMov = $('#vlrUn_prod_mov').val();
-        var vlrTtProdMov = $('#vlrTt_prod_mov').val();
-
-        if (idProdMov == '') {
-            alert('Selecione um produto');
-        }
-        else {
-            // Crie uma nova linha na tabela
-            var novaLinha = '<tr data-id="'+idProdMov+'">' +
-                '<td>'+codProdMov+'</td>' +
-                '<td>'+descProdMov+'</td>' +
-                '<td>'+qtdProdMov+'</td>' +
-                '<td>'+vlrUnProdMov+'</td>' +
-                '<td>'+vlrTtProdMov+'</td>' +
-                '<td><button class="btn btn-danger btn-sm remover-item "><i class="nc-icon nc-simple-remove" ></i> Remover</button></td>' +
-                '</tr>';
-            // Adicione a nova linha à tabela
-            $('#lista_itens').append(novaLinha);
-            // Limpe os campos do formulário para adicionar um novo item
-            $('#codProdMov').val('');
-            $('#cod_prod_mov').val('');
-            $('#desc_prod_mov').val('');
-            $('#qtd_prod_mov').val('1');
-            $('#vlrUn_prod_mov').val('');
-            $('#vlrTt_prod_mov').val('');
-            // Atualiza o valor total
-            updateValorTotal();
+$(function() {
+    $("#cliente_mov").autocomplete({
+        source: function(request, response) {
+            $.post("assets/pages/templates/get_cliente.php", { nmcliente: request.term }, function(data) {
+                response($.map(data, function(item) {
+                    return {
+                        label: item.nome_cliente,
+                        value: item.nome_cliente,
+                        id_cliente: item.id_cliente // Adicionamos o código do paciente como um atributo extra
+                    };
+                }));
+            }, "json");
+        },
+        minLength: 3, // Número mínimo de caracteres para começar a procurar
+        select: function(event, ui) {
+            $("#cliente_mov").val(ui.item.label); // Preenche o campo com o nome do paciente selecionado
+            $("#codCliente_mov").val(ui.item.id_cliente); // Armazena o código do paciente no campo oculto
+            return false;
         }
     });
-    // Função para remover item
-    $(document).on('click', '.remover-item', function() {
-        $(this).closest('tr').remove();
-    });
-    // Função para atualizar o valor total
-
-    // Evento de alteração para atualizar o valor total
-    $('#qtd_prod_mov, #vlrUn_prod_mov').on('change', updateValorTotal);
 });
-
-
 </script>

@@ -177,6 +177,21 @@ function cad_produto() {
     });
 }
 
+function tpMovimento() {
+    var tp_movimentacao = $('#tp_movimentacao').val();
+    if (tp_movimentacao == 1) {
+        $('#textDocMovimento').html('Dados do documento');
+        $('#tpSaida').addClass('d-none')
+        $('#tpEntrada').removeClass('d-none')
+    }
+    else {
+        $('#textDocMovimento').html('Dados da saída');
+        $('#tpEntrada').addClass('d-none')
+        $('#tpSaida').removeClass('d-none')
+
+    }
+}
+
 function getProdutoId(codFilter) {
     var codproduto = $('#cod_prod_mov').val();
     if (!/^\d+$/.test(codproduto)) {
@@ -223,6 +238,47 @@ function updateValorTotal() {
     $('#vlrTt_prod_mov').val(vlrTotal.toFixed(2).replace('.', ','));
 }
 
+
+
+function addProduto() {
+    // Obtenha os valores dos campos
+    var idProdMov = $('#codProdMov').val();
+    var codProdMov = $('#cod_prod_mov').val();
+    var descProdMov = $('#desc_prod_mov').val();
+    var qtdProdMov = $('#qtd_prod_mov').val();
+    var vlrUnProdMov = $('#vlrUn_prod_mov').val();
+    var vlrTtProdMov = $('#vlrTt_prod_mov').val();
+
+    if (idProdMov == '') {
+        alert('Selecione um produto');
+    }
+    else {
+        // Crie uma nova linha na tabela
+        var novaLinha = '<tr data-id="'+idProdMov+'">' +
+            '<td>'+codProdMov+'</td>' +
+            '<td>'+descProdMov+'</td>' +
+            '<td>'+qtdProdMov+'</td>' +
+            '<td>'+vlrUnProdMov+'</td>' +
+            '<td>'+vlrTtProdMov+'</td>' +
+            '<td><button class="btn btn-danger btn-sm remover-item "><i class="nc-icon nc-simple-remove" ></i> Remover</button></td>' +
+            '</tr>';
+        // Adicione a nova linha à tabela
+        $('#lista_itens').append(novaLinha);
+        // Limpe os campos do formulário para adicionar um novo item
+        $('#codProdMov').val('');
+        $('#cod_prod_mov').val('');
+        $('#desc_prod_mov').val('');
+        $('#qtd_prod_mov').val('1');
+        $('#vlrUn_prod_mov').val('0,00');
+        $('#vlrTt_prod_mov').val('');
+        // Atualiza o valor total
+        updateValorTotal();
+    }
+    $(document).on('click', '.remover-item', function() {
+        $(this).closest('tr').remove();
+    });
+}
+
 function gravamovimento() {
 
     var tp_movimentacao = $('#tp_movimentacao').val();
@@ -261,3 +317,5 @@ function gravamovimento() {
             alert(data)
 	});
 }
+
+
